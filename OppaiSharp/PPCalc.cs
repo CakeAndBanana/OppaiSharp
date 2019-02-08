@@ -212,7 +212,8 @@ namespace OppaiSharp
             }
 
             double accBonus = 0.5 + accuracy / 2.0;
-            double odBonus = 0.98 + (mapstats.OD * mapstats.OD) / 2500.0;
+            double odSquared = Math.Pow(mapstats.OD, 2);
+            double odBonus = 0.98 + odSquared / 2500.0;
 
             Aim *= accBonus;
             Aim *= odBonus;
@@ -222,9 +223,13 @@ namespace OppaiSharp
             Speed *= lengthBonus;
             Speed *= missPenality;
             Speed *= comboBreak;
-            Speed *= accBonus;
-            Speed *= odBonus;
             Speed *= arBonus;
+
+            /* scale speed with acc and od */
+            double accODBonus = 1.0 / (1.0 + Math.Exp(-20.0 * (accuracy + odSquared / 2310.0 - 0.8733))) / 1.89;
+            accODBonus += odSquared / 5000.0 + 0.49;
+
+            Speed *= accODBonus;
 
             if ((mods & Mods.Hidden) != 0)
             {
