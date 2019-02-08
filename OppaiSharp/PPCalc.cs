@@ -197,8 +197,19 @@ namespace OppaiSharp
                 Aim *= 1.02f + (11.0f - mapstats.AR) / 50.0f;
             }
 
-            if ((mods & Mods.Flashlight) != 0)
-                Aim *= 1.45 * lengthBonus;
+			if ((mods & Mods.Flashlight) != 0)
+			{
+				double flBonus = 1.0 + 0.35 * Math.Min(1.0, countObjects / 200.0);
+				if (countObjects > 200)
+				{
+					flBonus += 0.3 * Math.Min(1, (countObjects - 200) / 300.0);
+				}
+				if (countObjects > 500)
+				{
+					flBonus += (countObjects - 500) / 1200.0;
+				}
+				Aim *= flBonus;
+			}
 
             double accBonus = 0.5 + accuracy / 2.0;
             double odBonus = 0.98 + (mapstats.OD * mapstats.OD) / 2500.0;
