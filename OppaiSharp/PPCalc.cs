@@ -175,7 +175,7 @@ namespace OppaiSharp
             double arBonus = 1.0;
 
             if (mapstats.AR > 10.33)
-                arBonus += 0.45 * (mapstats.AR - 10.33);
+                arBonus += 0.3 * (mapstats.AR - 10.33);
             else if (mapstats.AR < 8.0) {
                 double lowArBonus = 0.01 * (8.0 - mapstats.AR);
 
@@ -224,6 +224,7 @@ namespace OppaiSharp
             Speed *= comboBreak;
             Speed *= accBonus;
             Speed *= odBonus;
+            Speed *= arBonus;
 
             if ((mods & Mods.Hidden) != 0)
             {
