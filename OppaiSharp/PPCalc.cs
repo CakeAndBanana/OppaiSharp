@@ -177,12 +177,7 @@ namespace OppaiSharp
             if (mapstats.AR > 10.33)
                 arBonus += 0.3 * (mapstats.AR - 10.33);
             else if (mapstats.AR < 8.0) {
-                double lowArBonus = 0.01 * (8.0 - mapstats.AR);
-
-                if ((mods & Mods.Hidden) != 0)
-                    lowArBonus *= 2.0;
-
-                arBonus += lowArBonus;
+                arBonus += 0.01 * (8.0 - mapstats.AR);
             }
 
             /* aim pp ---------------------------------------------- */
@@ -192,8 +187,10 @@ namespace OppaiSharp
             Aim *= comboBreak;
             Aim *= arBonus;
 
+            double hdBonus = 1.0;
             if ((mods & Mods.Hidden) != 0)
             {
+                hdBonus += 0.04f * (12.0f - mapstats.AR);
                 Aim *= 1.02f + (11.0f - mapstats.AR) / 50.0f;
             }
 
@@ -202,7 +199,7 @@ namespace OppaiSharp
                 double flBonus = 1.0 + 0.35 * Math.Min(1.0, countObjects / 200.0);
                 if (countObjects > 200)
                 {
-                flBonus += 0.3 * Math.Min(1, (countObjects - 200) / 300.0);
+                    flBonus += 0.3 * Math.Min(1, (countObjects - 200) / 300.0);
                 }
                 if (countObjects > 500)
                 {
@@ -217,6 +214,7 @@ namespace OppaiSharp
 
             Aim *= accBonus;
             Aim *= odBonus;
+            Aim *= hdBonus;
 
             /* speed pp -------------------------------------------- */
             Speed = GetPPBase(speedStars);
@@ -224,6 +222,7 @@ namespace OppaiSharp
             Speed *= missPenality;
             Speed *= comboBreak;
             Speed *= arBonus;
+            Speed *= hdBonus;
 
             /* scale speed with acc and od */
             double accODBonus = 1.0 / (1.0 + Math.Exp(-20.0 * (accuracy + odSquared / 2310.0 - 0.8733))) / 1.89;
@@ -231,18 +230,13 @@ namespace OppaiSharp
 
             Speed *= accODBonus;
 
-            if ((mods & Mods.Hidden) != 0)
-            {
-                Speed *= 1.18;
-            }
-
             /* acc pp ---------------------------------------------- */
             Acc = Math.Pow(1.52163, mapstats.OD) * Math.Pow(realAcc, 24.0) * 2.83;
 
             Acc *= Math.Min(1.15, Math.Pow(countCircles / 1000.0, 0.3));
 
             if ((mods & Mods.Hidden) != 0)
-                Acc *= 1.02;
+                Acc *= 1.08;
 
             if ((mods & Mods.Flashlight) != 0)
                 Acc *= 1.02;
