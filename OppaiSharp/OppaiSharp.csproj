@@ -7,12 +7,12 @@
     <Company>HoLLy</Company>
     <PackageId>HoLLy.osu.OppaiSharp</PackageId>
     <Description>An osu! PP library. Port of oppai-ng.</Description>
-    <PackageProjectUrl>https://github.com/HoLLy-HaCKeR/OppaiSharp/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/HoLLy-HaCKeR/OppaiSharp/</RepositoryUrl>
-    <PackageLicenseUrl>https://github.com/HoLLy-HaCKeR/OppaiSharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/stanriders/OppaiSharp/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/stanriders/OppaiSharp/</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/stanriders/OppaiSharp/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>osu! osu pp oppai</PackageTags>
-    <PackageReleaseNotes>Updated for HD rebalance (thanks to Piotrekol!)</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated for (some) PP rebalances, changed how accuracy is being calculated</PackageReleaseNotes>
     <Version>3.0</Version>
   </PropertyGroup>
 
