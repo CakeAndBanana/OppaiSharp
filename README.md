@@ -23,10 +23,10 @@ Console.WriteLine(string.Format("Star rating: {0:F2} (aim stars: {1:F2}, speed s
     diff.Total, diff.Aim, diff.Speed));
 
 //calculate the PP for a play on this map
-//the play has no misses or 50's, so we don't specify them
-var pp = new PPv2(new PPv2Parameters(beatmap, diff, c100: 8, mods: mods));
+//the play has no misses so we don't specify them
+//accuracy should be in 0..1 range
+var pp = new PPv2(new PPv2Parameters(beatmap, diff, accuracy: 98.5 / 100, mods: mods));
 
-Console.WriteLine(string.Format("Play is worth {0:F2}pp ({1:F2} aim pp, {2:F2} acc pp, {3:F2} speed pp) " +
-                                "and has an accuracy of {4:F2}%", 
-    pp.Total, pp.Aim, pp.Acc, pp.Speed, pp.ComputedAccuracy.Value() * 100));
+Console.WriteLine(string.Format("Play is worth {0:F2}pp ({1:F2} aim pp, {2:F2} acc pp, {3:F2} speed pp) ", 
+    pp.Total, pp.Aim, pp.Acc, pp.Speed));
 ```

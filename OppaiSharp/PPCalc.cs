@@ -29,24 +29,24 @@ namespace OppaiSharp
         /// <summary> the maximum combo achieved, if -1 it will default to MaxCombo - CountMiss </summary>
         public int Combo = -1;
 
-        /// <summary> number of 300s, if -1 it will default to CountObjects - Count100 - Count50 - nmiss </summary>
-        public int Count300 = -1;
-        public int Count100, Count50, CountMiss;
+        /// <summary> amount of misses </summary>
+        public int CountMiss;
 
         /// <summary> scorev1 (1) or scorev2 (2) </summary>
         public int ScoreVersion = 1;
+
+        /// <summary> accuracy in 0..1 range </summary>
+        public double Accuracy = 1;
 
         public PPv2Parameters() { }
 
         /// <param name="bm">The Beatmap object</param>
         /// <param name="d">The DiffCalc object that ran on this beatmap</param>
-        /// <param name="c300">Amount of 300's. At least this or <paramref name="combo"/> has to be set.</param>
-        /// <param name="c100">Amount of 100's</param>
-        /// <param name="c50">Amount of 50's</param>
+        /// <param name="accuracy">Accuracy in 0..1 range</param>
         /// <param name="cMiss">Amount of misses</param>
         /// <param name="combo">The combo reached by the player. At least this or <paramref name="c300"/> has to be set.</param>
         /// <param name="mods">The used mods.</param>
-        public PPv2Parameters(Beatmap bm, DiffCalc d, int c100, int c50 = 0, int cMiss = 0, int combo = -1, int c300 = -1, Mods mods = Mods.NoMod)
+        public PPv2Parameters(Beatmap bm, DiffCalc d, double accuracy, int cMiss = 0, int combo = -1, Mods mods = Mods.NoMod)
         {
             //run DiffCalc if it hadn't yet
             if (d.CountSingles == 0 && Math.Abs(d.Total) <= double.Epsilon)
@@ -55,35 +55,32 @@ namespace OppaiSharp
             Beatmap = bm;
             AimStars = d.Aim;
             SpeedStars = d.Speed;
-            Count100 = c100;
-            Count50 = c50;
             CountMiss = cMiss;
             Combo = combo;
-            Count300 = c300;
             Mods = mods;
-        }
 
+            Accuracy = accuracy;
+        }
+        
         /// <param name="bm">The beatmap, diffcalc will run on this.</param>
-        /// <param name="c300">Amount of 300's. At least this or <paramref name="combo"/> has to be set.</param>
-        /// <param name="c100">Amount of 100's</param>
-        /// <param name="c50">Amount of 50's</param>
+        /// <param name="accuracy">Accuracy</param>
         /// <param name="cMiss">Amount of misses</param>
         /// <param name="combo">The combo reached by the player. At least this or <paramref name="c300"/> has to be set.</param>
         /// <param name="mods">The used mods.</param>
-        public PPv2Parameters(Beatmap bm, int c100, int c50 = 0, int cMiss = 0, int combo = -1, int c300 = -1, Mods mods = Mods.NoMod)
+        public PPv2Parameters(Beatmap bm, double accuracy, int cMiss = 0, int combo = -1, Mods mods = Mods.NoMod)
         {
             var d = new DiffCalc().Calc(bm, mods);
 
             Beatmap = bm;
             AimStars = d.Aim;
             SpeedStars = d.Speed;
-            Count100 = c100;
-            Count50 = c50;
             CountMiss = cMiss;
             Combo = combo;
-            Count300 = c300;
             Mods = mods;
+
+            Accuracy = accuracy;
         }
+        
     }
 
     public class PPv2
@@ -101,7 +98,7 @@ namespace OppaiSharp
         private PPv2(double aimStars, double speedStars,
             int maxCombo, int countSliders, int countCircles, int countObjects,
             float baseAR, float baseOD, GameMode mode, Mods mods,
-            int combo, int count300, int count100, int count50, int countMiss,
+            int combo, double accuracy, int countMiss,
             int scoreVersion, Beatmap beatmap)
         {
             if (beatmap != null) {
@@ -125,13 +122,14 @@ namespace OppaiSharp
             if (combo < 0)
                 combo = maxCombo - countMiss;
 
-            if (count300 < 0)
-                count300 = countObjects - count100 - count50 - countMiss;
-
             /* accuracy -------------------------------------------- */
-            ComputedAccuracy = new Accuracy(count300, count100, count50, countMiss);
-            double accuracy = ComputedAccuracy.Value();
-            double realAcc = accuracy;
+            ComputedAccuracy = new Accuracy(accuracy, countObjects, countMiss);
+
+            // reconstruct n300, n100 and n50 from accuracy because we dont really care about real amounts
+            int count300 = ComputedAccuracy.Count300;
+            int count100 = ComputedAccuracy.Count100;
+            int count50 = ComputedAccuracy.Count50;
+            double realAcc = ComputedAccuracy.Value();
 
             switch (scoreVersion)
             {
@@ -257,7 +255,7 @@ namespace OppaiSharp
         public PPv2(PPv2Parameters p) : 
             this(p.AimStars, p.SpeedStars, p.MaxCombo, p.CountSliders,
             p.CountCircles, p.CountObjects, p.BaseAR, p.BaseOD, p.Mode,
-            p.Mods, p.Combo, p.Count300, p.Count100, p.Count50, p.CountMiss,
+            p.Mods, p.Combo, p.Accuracy, p.CountMiss,
             p.ScoreVersion, p.Beatmap)
         { }
 
@@ -267,7 +265,7 @@ namespace OppaiSharp
         /// </summary>
         public PPv2(double aimStars, double speedStars, Beatmap map) 
             : this(aimStars, speedStars, -1, map.CountSliders, map.CountCircles, map.Objects.Count, 
-                  map.AR, map.OD, map.Mode, Mods.NoMod, -1, -1, 0, 0, 0, 1, map)
+                  map.AR, map.OD, map.Mode, Mods.NoMod, -1, 100, 0, 1, map)
         { }
 
         private static double GetPPBase(double stars) => Math.Pow(5.0 * Math.Max(1.0, stars / 0.0675) - 4.0, 3.0) / 100000.0;
