@@ -191,7 +191,6 @@ namespace OppaiSharp
             if ((mods & Mods.Hidden) != 0)
             {
                 hdBonus += 0.04f * (12.0f - mapstats.AR);
-                Aim *= 1.02f + (11.0f - mapstats.AR) / 50.0f;
             }
 
             if ((mods & Mods.Flashlight) != 0)
