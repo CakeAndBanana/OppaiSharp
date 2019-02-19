@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard1.0;net20</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>HoLLy</Authors>
+    <Authors>HoLLy, StanR, Francesco149</Authors>
     <Company>HoLLy</Company>
     <PackageId>HoLLy.osu.OppaiSharp</PackageId>
     <Description>An osu! PP library. Port of oppai-ng.</Description>
@@ -12,8 +12,8 @@
     <PackageLicenseUrl>https://github.com/stanriders/OppaiSharp/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>osu! osu pp oppai</PackageTags>
-    <PackageReleaseNotes>Updated for (some) PP rebalances, changed how accuracy is being calculated</PackageReleaseNotes>
-    <Version>3.0</Version>
+    <PackageReleaseNotes>Updated for the rest of pp rebalances</PackageReleaseNotes>
+    <Version>3.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
