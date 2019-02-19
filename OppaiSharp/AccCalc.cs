@@ -55,7 +55,7 @@ namespace OppaiSharp
 
             double maxAcc = new Accuracy(max300, 0, 0, countMiss).Value() * 100.0;
 
-            accPercent = Math.Max(0.0, Math.Min(maxAcc, accPercent));
+            accPercent = Math.Max(0.0, Math.Min(maxAcc, accPercent * 100));
 
             //just some black magic maths from wolfram alpha
             Count100 = (int)Math.Round(-3.0 * ((accPercent * 0.01 - 1.0) * countObjects + countMiss) * 0.5);
