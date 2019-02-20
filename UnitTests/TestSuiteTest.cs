@@ -15,26 +15,24 @@ namespace UnitTests
 {
 	public class TestSuiteTest
 	{
-		private const string SuitePath = "test_suite_20180515.tar.xz";
-		private const string SuiteUrl = "http://www.hnng.moe/stuff/" + SuitePath;
+		private const string SuitePath = "test_suite_2019-02-19.tar.gz";
+		private const string SuiteUrl = "http://github.com/Francesco149/oppai-ng/releases/download/2.3.2/" + SuitePath;
 		private const string SuiteExpectedPath = "TestSuite.txt";
 
 		private readonly List<Tuple<uint, ExpectedOutcome>> testCases = new List<Tuple<uint, ExpectedOutcome>>();
 		private readonly ITestOutputHelper output;
 
+		private const double error_margin = 0.06; // 6%
+
 		public TestSuiteTest(ITestOutputHelper output)
 		{
 			this.output = output;
 
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
 			//make sure that the results are downloaded
-			try
-			{
-				if (!File.Exists(SuitePath))
-					new WebClient().DownloadFile(SuiteUrl, SuitePath);
-			}
-			catch (Exception)
-			{
-			}
+			if (!File.Exists(SuitePath))
+				new WebClient().DownloadFile(SuiteUrl, SuitePath);
 
 			//require the suite results to be here
 			Skip.IfNot(File.Exists(SuiteExpectedPath), SuiteExpectedPath + " not found!");
@@ -93,14 +91,16 @@ namespace UnitTests
 						bm = Beatmap.Read(str);
 						swParsing.Stop();
 
-						foreach (var testcase in testCases.Where(a => a.Item1 == id).Select(a => a.Item2))
+						foreach (var testcase in testCases.Where(a => a.Item1 == id && a.Item2.Mode != 1).Select(a => a.Item2))
 						{
 							var expected = testcase.PP;
 
 							++totalCases;
 							swCalculating.Start();
-							var actual = CheckCase(bm, testcase, out double margin);
+							var actual = CheckCase(bm, testcase);
 							swCalculating.Stop();
+
+							double margin = error_margin * expected;
 
 							var diff = Math.Abs(actual - expected);
 
@@ -180,27 +180,16 @@ namespace UnitTests
 			//not checking the actual value, just making sure that it doesn't throw
 		}
 
-		private static double CheckCase(Beatmap bm, ExpectedOutcome outcome, out double margin)
+		private static double CheckCase(Beatmap bm, ExpectedOutcome outcome)
 		{
-			const double errorMargin = 0.02;
-
-			margin = errorMargin * outcome.PP;
-
 			var pp = new PPv2(outcome.ToParameters(bm));
-
-			if (outcome.PP < 100)
-				margin *= 3;
-			else if (outcome.PP < 200)
-				margin *= 2;
-			else if (outcome.PP < 300)
-				margin *= 1.5;
-
 			return pp.Total;
 		}
 
 		private struct ExpectedOutcome
 		{
 			public readonly double PP;
+			public readonly ushort Mode;
 
 			private readonly ushort combo;
 			private readonly ushort count300, count100, count50, countMiss;
@@ -211,18 +200,19 @@ namespace UnitTests
 				line = line.Trim(' ', ',', '{', '}');
 				string[] s = line.Split(',');
 
-				Skip.IfNot(s.Length == 8, "Invalid test case");
+				Skip.IfNot(s.Length == 9, "Invalid test case");
 
-				id = uint.Parse(s[0]);
-				combo = ushort.Parse(s[1]);
-				count300 = ushort.Parse(s[2]);
-				count100 = ushort.Parse(s[3]);
-				count50 = ushort.Parse(s[4]);
-				countMiss = ushort.Parse(s[5]);
+				Mode = ushort.Parse(s[0]);
+				id = uint.Parse(s[1]);
+				combo = ushort.Parse(s[2]);
+				count300 = ushort.Parse(s[3]);
+				count100 = ushort.Parse(s[4]);
+				count50 = ushort.Parse(s[5]);
+				countMiss = ushort.Parse(s[6]);
 
-				PP = double.Parse(s[7], CultureInfo.InvariantCulture);
+				PP = double.Parse(s[8], CultureInfo.InvariantCulture);
 
-				string modString = s[6].Trim(' ').Replace(" | ", string.Empty).ToUpper();
+				string modString = s[7].Trim(' ').Replace(" | ", string.Empty).ToUpper();
 				mods = Helpers.StringToMods(modString);
 			}
 
