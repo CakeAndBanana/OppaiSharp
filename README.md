@@ -1,3 +1,6 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/iin32s6rj9jlsy8b?svg=true)](https://ci.appveyor.com/project/stanriders/oppaisharp)
+[![NuGet](https://img.shields.io/nuget/v/OppaiSharp.svg)](https://www.nuget.org/packages/OppaiSharp)
+
 # OppaiSharp
 OppaiSharp is a C# port of [oppai-ng](//github.com/Francesco149/oppai-ng) by [Francesco149](//github.com/Francesco149), based on its Java port [Koohii](//github.com/Francesco149/koohii). It allows you to calculate star ratings and PP values for any osu!standard map, just like oppai(-ng) does.
 
