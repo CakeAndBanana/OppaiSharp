@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>HoLLy, StanR, Francesco149</Authors>
     <Company>HoLLy</Company>
-    <PackageId>HoLLy.osu.OppaiSharp</PackageId>
+    <PackageId>OppaiSharp</PackageId>
     <Description>An osu! PP library. Port of oppai-ng.</Description>
     <PackageProjectUrl>https://github.com/stanriders/OppaiSharp/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/stanriders/OppaiSharp/</RepositoryUrl>
