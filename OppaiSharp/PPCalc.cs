@@ -4,11 +4,6 @@ namespace OppaiSharp
 {
 	public class PPv2Parameters
 	{
-		/// <summary> 
-		/// If not null, MaxCombo, CountSliders, CountCircles, CountObjects, BaseAR, BaseOD will be obtained from this beatmap.
-		/// </summary>
-		public Beatmap Beatmap;
-
 		public double AimStars;
 		public double SpeedStars;
 		public int MaxCombo = 0;
@@ -51,11 +46,21 @@ namespace OppaiSharp
 		public PPv2Parameters(Beatmap bm, DiffCalc d, double accuracy, int cMiss = 0, int combo = -1,
 			Mods mods = Mods.NoMod)
 		{
+			if (bm == null)
+				throw new ArgumentNullException(nameof(bm));
+
 			//run DiffCalc if it hadn't yet
 			if (d.CountSingles == 0 && Math.Abs(d.Total) <= double.Epsilon)
 				d.Calc(bm, mods);
 
-			Beatmap = bm;
+			Mode = bm.Mode;
+			BaseAR = bm.AR;
+			BaseOD = bm.OD;
+			MaxCombo = bm.GetMaxCombo();
+			CountSliders = bm.CountSliders;
+			CountCircles = bm.CountCircles;
+			CountObjects = bm.Objects.Count;
+
 			AimStars = d.Aim;
 			SpeedStars = d.Speed;
 			CountMiss = cMiss;
@@ -72,9 +77,19 @@ namespace OppaiSharp
 		/// <param name="mods">The used mods.</param>
 		public PPv2Parameters(Beatmap bm, double accuracy, int cMiss = 0, int combo = -1, Mods mods = Mods.NoMod)
 		{
+			if (bm == null)
+				throw new ArgumentNullException(nameof(bm));
+
 			var d = new DiffCalc().Calc(bm, mods);
 
-			Beatmap = bm;
+			Mode = bm.Mode;
+			BaseAR = bm.AR;
+			BaseOD = bm.OD;
+			MaxCombo = bm.GetMaxCombo();
+			CountSliders = bm.CountSliders;
+			CountCircles = bm.CountCircles;
+			CountObjects = bm.Objects.Count;
+
 			AimStars = d.Aim;
 			SpeedStars = d.Speed;
 			CountMiss = cMiss;
@@ -269,7 +284,7 @@ namespace OppaiSharp
 			this(p.AimStars, p.SpeedStars, p.MaxCombo, p.CountSliders,
 				p.CountCircles, p.CountObjects, p.BaseAR, p.BaseOD, p.Mode,
 				p.Mods, p.Combo, p.Accuracy, p.CountMiss,
-				p.ScoreVersion, p.Beatmap)
+				p.ScoreVersion, null)
 		{
 		}
 
