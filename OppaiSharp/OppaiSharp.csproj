@@ -12,8 +12,8 @@
     <PackageLicenseUrl>https://github.com/stanriders/OppaiSharp/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>osu! osu pp oppai</PackageTags>
-    <PackageReleaseNotes>Target higher framework versions</PackageReleaseNotes>
-    <Version>3.3</Version>
+    <PackageReleaseNotes>Integrate 01.2021 pp changes</PackageReleaseNotes>
+    <Version>3.4</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

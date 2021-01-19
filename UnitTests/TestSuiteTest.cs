@@ -156,11 +156,11 @@ namespace UnitTests
 
 			//calculate the PP for this map
 			//the play has no misses or 50's, so we don't specify it
-			var pp = new PPv2(new PPv2Parameters(beatmap, stars, 99.55 / 100, mods: mods, combo: 1773));
+			var pp = new PPv2(new PPv2Parameters(beatmap, stars, 99.49 / 100, mods: mods, combo: 1773));
 			output.WriteLine($"Play is worth {pp.Total:F2}pp ({pp.Aim:F2} aim pp, {pp.Acc:F2} acc pp, {pp.Speed:F2} " +
 			                 $"speed pp) and has an accuracy of {pp.ComputedAccuracy.Value() * 100:F2}%");
 
-			Assert.InRange(813, pp.Total - 5, pp.Total + 5);
+			Assert.InRange(824, pp.Total - 5, pp.Total + 5);
 		}
 
 		[Fact]

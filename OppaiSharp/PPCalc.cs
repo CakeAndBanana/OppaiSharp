@@ -7,7 +7,7 @@ namespace OppaiSharp
 		public double AimStars;
 		public double SpeedStars;
 		public int MaxCombo = 0;
-		public int CountSliders = 0, CountCircles = 0, CountObjects = 0;
+		public int CountSliders = 0, CountCircles = 0, CountSpinners = 0, CountObjects = 0;
 
 		/// <summary> the base AR (before applying mods). </summary>
 		public float BaseAR = 5.0f;
@@ -59,6 +59,7 @@ namespace OppaiSharp
 			MaxCombo = bm.GetMaxCombo();
 			CountSliders = bm.CountSliders;
 			CountCircles = bm.CountCircles;
+			CountSpinners = bm.CountSpinners;
 			CountObjects = bm.Objects.Count;
 
 			AimStars = d.Aim;
@@ -88,6 +89,7 @@ namespace OppaiSharp
 			MaxCombo = bm.GetMaxCombo();
 			CountSliders = bm.CountSliders;
 			CountCircles = bm.CountCircles;
+			CountSpinners = bm.CountSpinners;
 			CountObjects = bm.Objects.Count;
 
 			AimStars = d.Aim;
@@ -114,7 +116,7 @@ namespace OppaiSharp
 		/// See: <seealso cref="PPv2Parameters"/>
 		/// </summary>
 		private PPv2(double aimStars, double speedStars,
-			int maxCombo, int countSliders, int countCircles, int countObjects,
+			int maxCombo, int countSliders, int countCircles, int countSpinners, int countObjects,
 			float baseAR, float baseOD, GameMode mode, Mods mods,
 			int combo, double accuracy, int countMiss,
 			int scoreVersion, Beatmap beatmap)
@@ -127,6 +129,7 @@ namespace OppaiSharp
 				maxCombo = beatmap.GetMaxCombo();
 				countSliders = beatmap.CountSliders;
 				countCircles = beatmap.CountCircles;
+				countSpinners = beatmap.CountSpinners;
 				countObjects = beatmap.Objects.Count;
 			}
 
@@ -156,8 +159,6 @@ namespace OppaiSharp
 				case 1:
 					//scorev1 ignores sliders since they are free 300s
 					//and for some reason also ignores spinners
-					int countSpinners = countObjects - countSliders - countCircles;
-
 					realAcc = new Accuracy(Math.Max(count300 - countSliders - countSpinners, 0), count100, count50,
 						countMiss).Value();
 
@@ -180,7 +181,6 @@ namespace OppaiSharp
 			if (countObjects > 2000)
 				lengthBonus += Math.Log10(countObjectsOver2K) * 0.5;
 
-			double missPenality = Math.Pow(0.97, countMiss);
 			double comboBreak = Math.Pow(combo, 0.8) / Math.Pow(maxCombo, 0.8);
 
 			//calculate stats with mods
@@ -191,24 +191,22 @@ namespace OppaiSharp
 			};
 			mapstats = MapStats.ModsApply(mods, mapstats, ModApplyFlags.ApplyAR | ModApplyFlags.ApplyOD);
 
-			/* ar bonus -------------------------------------------- */
-			double arBonus = 1.0;
-
-			if (mapstats.AR > 10.33)
-			{
-				arBonus += 0.3 * (mapstats.AR - 10.33);
-			}
-			else if (mapstats.AR < 8.0)
-			{
-				arBonus += 0.01 * (8.0 - mapstats.AR);
-			}
-
 			/* aim pp ---------------------------------------------- */
 			Aim = GetPPBase(aimStars);
 			Aim *= lengthBonus;
-			Aim *= missPenality;
 			Aim *= comboBreak;
-			Aim *= arBonus;
+
+			double aimArBonus = 0.0;
+			if (mapstats.AR > 10.33)
+				aimArBonus += 0.4 * (mapstats.AR - 10.33);
+			else if (mapstats.AR < 8.0)
+				aimArBonus += 0.01 * (8.0 - mapstats.AR);
+
+			Aim *= 1.0 + Math.Min(aimArBonus, aimArBonus * (countObjects / 1000.0));
+
+			// Penalize misses by assessing # of misses relative to the total # of objects. Default a 3% reduction for any # of misses.
+			if (countMiss > 0)
+				Aim *= 0.97 * Math.Pow(1 - Math.Pow((double)countMiss / countObjects, 0.775), countMiss);
 
 			double hdBonus = 1.0;
 			if ((mods & Mods.Hidden) != 0)
@@ -243,16 +241,24 @@ namespace OppaiSharp
 			/* speed pp -------------------------------------------- */
 			Speed = GetPPBase(speedStars);
 			Speed *= lengthBonus;
-			Speed *= missPenality;
 			Speed *= comboBreak;
-			Speed *= arBonus;
 			Speed *= hdBonus;
 
-			/* "scale the speed value with accuracy slightly" */
-			Speed *= 0.02f + accuracy;
+			double speedArBonus = 0.0;
+			if (mapstats.AR > 10.33)
+				speedArBonus += 0.4 * (mapstats.AR - 10.33);
 
-			/* "it is important to also consider accuracy difficulty when doing that" */
-			Speed *= 0.96f + (odSquared / 1600.0f);
+			Speed *= 1.0 + Math.Min(speedArBonus, speedArBonus * (countObjects / 1000.0));
+
+			// Penalize misses by assessing # of misses relative to the total # of objects. Default a 3% reduction for any # of misses.
+			if (countMiss > 0)
+				Speed *= 0.97 * Math.Pow(1 - Math.Pow((double)countMiss / countObjects, 0.775), Math.Pow(countMiss, .875));
+
+			// Scale the speed value with accuracy and OD
+			Speed *= (0.95 + odSquared / 750) * Math.Pow(accuracy, (14.5 - Math.Max(mapstats.OD, 8)) / 2);
+
+			// Scale the speed value with # of 50s to punish doubletapping.
+			Speed *= Math.Pow(0.98, count50 < countObjects / 500.0 ? 0 : count50 - countObjects / 500.0);
 
 			/* acc pp ---------------------------------------------- */
 			Acc = Math.Pow(1.52163, mapstats.OD) * Math.Pow(realAcc, 24.0) * 2.83;
@@ -269,10 +275,10 @@ namespace OppaiSharp
 			double finalMultiplier = 1.12;
 
 			if ((mods & Mods.NoFail) != 0)
-				finalMultiplier *= 0.90;
+				finalMultiplier *= Math.Max(0.9, 1.0 - 0.02 * countMiss);
 
 			if ((mods & Mods.SpunOut) != 0)
-				finalMultiplier *= 0.95;
+				finalMultiplier *= 1.0 - Math.Pow(countSpinners / countObjects, 0.85);
 
 			Total = Math.Pow(Math.Pow(Aim, 1.1) + Math.Pow(Speed, 1.1) + Math.Pow(Acc, 1.1), 1.0 / 1.1) *
 			        finalMultiplier;
@@ -282,7 +288,7 @@ namespace OppaiSharp
 		/// <summary> See <see cref="PPv2Parameters" /> </summary>
 		public PPv2(PPv2Parameters p) :
 			this(p.AimStars, p.SpeedStars, p.MaxCombo, p.CountSliders,
-				p.CountCircles, p.CountObjects, p.BaseAR, p.BaseOD, p.Mode,
+				p.CountCircles, p.CountSpinners, p.CountObjects, p.BaseAR, p.BaseOD, p.Mode,
 				p.Mods, p.Combo, p.Accuracy, p.CountMiss,
 				p.ScoreVersion, null)
 		{
@@ -293,7 +299,7 @@ namespace OppaiSharp
 		/// Simplest possible call, calculates ppv2 for SS scorev1
 		/// </summary>
 		public PPv2(double aimStars, double speedStars, Beatmap map)
-			: this(aimStars, speedStars, -1, map.CountSliders, map.CountCircles, map.Objects.Count,
+			: this(aimStars, speedStars, -1, map.CountSliders, map.CountCircles, map.CountSpinners, map.Objects.Count,
 				map.AR, map.OD, map.Mode, Mods.NoMod, -1, 1, 0, 1, map)
 		{
 		}
