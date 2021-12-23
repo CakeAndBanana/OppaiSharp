@@ -198,11 +198,11 @@ namespace OppaiSharp
 
 			double aimArBonus = 0.0;
 			if (mapstats.AR > 10.33)
-				aimArBonus += 0.4 * (mapstats.AR - 10.33);
+				aimArBonus += 0.3 * (mapstats.AR - 10.33);
 			else if (mapstats.AR < 8.0)
-				aimArBonus += 0.01 * (8.0 - mapstats.AR);
+				aimArBonus += 0.1 * (8.0 - mapstats.AR);
 
-			Aim *= 1.0 + Math.Min(aimArBonus, aimArBonus * (countObjects / 1000.0));
+			Aim *= 1.0 + aimArBonus * lengthBonus;
 
 			// Penalize misses by assessing # of misses relative to the total # of objects. Default a 3% reduction for any # of misses.
 			if (countMiss > 0)
@@ -230,7 +230,7 @@ namespace OppaiSharp
 				Aim *= flBonus;
 			}
 
-			double accBonus = 0.5 + accuracy / 2.0;
+			double accBonus = accuracy;
 			double odSquared = Math.Pow(mapstats.OD, 2);
 			double odBonus = 0.98 + odSquared / 2500.0;
 
@@ -246,9 +246,9 @@ namespace OppaiSharp
 
 			double speedArBonus = 0.0;
 			if (mapstats.AR > 10.33)
-				speedArBonus += 0.4 * (mapstats.AR - 10.33);
+				speedArBonus += 0.3 * (mapstats.AR - 10.33);
 
-			Speed *= 1.0 + Math.Min(speedArBonus, speedArBonus * (countObjects / 1000.0));
+			Speed *= 1.0 + speedArBonus * lengthBonus;
 
 			// Penalize misses by assessing # of misses relative to the total # of objects. Default a 3% reduction for any # of misses.
 			if (countMiss > 0)
